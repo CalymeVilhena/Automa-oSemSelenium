@@ -4,14 +4,19 @@ from screeninfo import get_monitors
 import pygetwindow as gw
 import pyautogui as pa
 
+
+
 # --- CONFIGURAÇÕES ---
 CHROME_EXE = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 PROFILE_DIR = r"C:\Users\calyme.santos\AppData\Local\Google\Chrome\User Data"
 PROFILE_NAME = "Default"
 
+#cameras
+CAMERA_APP= r"C:\Program Files\Intelbras\SIMNext\SIM Next\SIMNext.exe"
 urls = [
     "https://app.powerbi.com/groups/d702a34a-014d-4648-907f-c7db7e866666/reports/96202848-3ed9-49f1-8eef-4db4788ef112/f3e2df5a5423ea6a8949?experience=power-bi&chromeless=1",
-    "https://app.powerbi.com/groups/d702a34a-014d-4648-907f-c7db7e866666/reports/e16448ab-e673-4e98-b2e9-53c1dd294dc1/8326f342dc397d3d73a5?experience=power-bi&chromeless=1"
+    "https://app.powerbi.com/groups/d702a34a-014d-4648-907f-c7db7e866666/reports/e16448ab-e673-4e98-b2e9-53c1dd294dc1/8326f342dc397d3d73a5?experience=power-bi&chromeless=1",
+    "https://app.powerbi.com/groups/02bd57aa-c625-4b5f-b5b2-94b1afd89123/reports/s6f49b4d5-6abb-4d17-896e-5542c1f562ba/d1b77882d3ec4d4bab8d?experience=power-bi&cromeless=1"
 ]
 
 # --- Detecta monitores disponíveis ---
@@ -65,11 +70,22 @@ def mover_para_monitor(janela, monitor):
     except Exception as e:
         print("⚠️ Erro ao mover ou colocar em tela cheia:", e)
 
+
+
 # --- Loop principal ---
 for i, url in enumerate(urls):
+    
     monitor = monitores[i % n_monitores]
     janelas_antes = chrome_janelas_existentes()
 
+for i, monitor in enumerate(monitores):
+    # 👉 Se for o monitor 1, abre o aplicativo de câmeras
+    if i == 0:
+        print(f"🎥 Abrindo câmera no monitor {i+1}")
+        subprocess.Popen(CAMERA_APP)
+        time.sleep(3)  # dá um tempo pro app abrir
+        continue
+    
     abrir_chrome_nova_janela(url)
     print(f"Abrindo URL: {url}")
 
