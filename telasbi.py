@@ -4,22 +4,18 @@ from screeninfo import get_monitors
 import pygetwindow as gw
 import pyautogui as pa
 
-
-
 # --- CONFIGURAÇÕES ---
 CHROME_EXE = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 PROFILE_DIR = r"C:\Users\calyme.santos\AppData\Local\Google\Chrome\User Data"
 PROFILE_NAME = "Default"
 
-#cameras
-CAMERA_APP= r"C:\Program Files\Intelbras\SIMNext\SIM Next\SIMNext.exe"
+# Dashboards a abrir
 urls = [
-    "https://app.powerbi.com/groups/d702a34a-014d-4648-907f-c7db7e866666/reports/96202848-3ed9-49f1-8eef-4db4788ef112/f3e2df5a5423ea6a8949?experience=power-bi&chromeless=1",
-    "https://app.powerbi.com/groups/d702a34a-014d-4648-907f-c7db7e866666/reports/e16448ab-e673-4e98-b2e9-53c1dd294dc1/8326f342dc397d3d73a5?experience=power-bi&chromeless=1",
-    "https://app.powerbi.com/groups/02bd57aa-c625-4b5f-b5b2-94b1afd89123/reports/s6f49b4d5-6abb-4d17-896e-5542c1f562ba/d1b77882d3ec4d4bab8d?experience=power-bi&cromeless=1"
+    "https://app.powerbi.com/groups/5c03b87e-c5cf-4df7-b6cb-7de67718eb23/reports/b14eca2e-bf90-4424-9eb4-35b4c0ad5512/d1b77882d3ec4d4bab8d?chromeless=1",
+    "https://app.powerbi.com/groups/d702a34a-014d-4648-907f-c7db7e866666/reports/d351ccee-9056-4c85-9fae-d3ebc72fc927/56d9bc526243eb2b7e90?chromeless=1"
 ]
 
-# --- Detecta monitores disponíveis ---
+# --- Detecta monitores ---
 monitores = get_monitors()
 n_monitores = len(monitores)
 print(f"Monitores detectados: {n_monitores}")
@@ -56,7 +52,7 @@ def esperar_janela_nova(janelas_antes, timeout=20):
     return None
 
 def mover_para_monitor(janela, monitor):
-    """Move a janela para o monitor especificado usando coordenadas diretas"""
+    """Move a janela para o monitor especificado"""
     try:
         janela.activate()
         time.sleep(0.5)
@@ -64,37 +60,29 @@ def mover_para_monitor(janela, monitor):
         janela.resizeTo(monitor.width, monitor.height)
         time.sleep(1)
         janela.activate()
-        pa.press("f11")  # tela cheia
-        time.sleep(1)
-        print(f"✅ Janela posicionada em monitor com x={monitor.x}, y={monitor.y}")
+        pa.press("f11")  # Tela cheia
+        print(f"✅ Janela posicionada em monitor {monitor.x}, {monitor.y}")
     except Exception as e:
-        print("⚠️ Erro ao mover ou colocar em tela cheia:", e)
-
-
+        print("⚠️ Erro ao mover:", e)
 
 # --- Loop principal ---
 for i, url in enumerate(urls):
-    
-    monitor = monitores[i % n_monitores]
+    if i >= n_monitores:
+        print("⚠️ Mais dashboards do que monitores disponíveis.")
+        break
+
+    monitor = monitores[i]
+    print(f"🌐 Abrindo dashboard {i+1} no monitor {i+1}")
+
     janelas_antes = chrome_janelas_existentes()
-
-for i, monitor in enumerate(monitores):
-    # 👉 Se for o monitor 1, abre o aplicativo de câmeras
-    if i == 0:
-        print(f"🎥 Abrindo câmera no monitor {i+1}")
-        subprocess.Popen(CAMERA_APP)
-        time.sleep(3)  # dá um tempo pro app abrir
-        continue
-    
     abrir_chrome_nova_janela(url)
-    print(f"Abrindo URL: {url}")
+    time.sleep(2)
 
-    janela_encontrada = esperar_janela_nova(janelas_antes, timeout=20)
-    if not janela_encontrada:
-        print("⚠️ Não foi possível identificar a janela recém-aberta. Pulando para próxima URL.")
-        continue
+    janela_encontrada = esperar_janela_nova(janelas_antes)
+    if janela_encontrada:
+        mover_para_monitor(janela_encontrada, monitor)
+    else:
+        print(f"⚠️ Janela {i+1} não detectada.")
+    time.sleep(3)
 
-    mover_para_monitor(janela_encontrada, monitor)
-    time.sleep(1)  # espera antes de abrir a próxima janela
-
-print("🎯 Todas as janelas abertas, distribuídas e em tela cheia (F11).")
+print("🎯 Todas as janelas abertas, distribuídas e em tela cheia!")
